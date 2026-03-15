@@ -12,6 +12,7 @@ This repository is intended as a quick working reference for developers building
 - web links
 - looping patterns
 - Dataverse-backed display concepts
+ - Dataverse-backed display concepts (FetchXML + Liquid examples)
 - portal content patterns
 - practical troubleshooting notes
 
@@ -24,6 +25,10 @@ This repository is intended as a quick working reference for developers building
 - [Entity and Data Patterns](entity-and-data-patterns.md)
 - [Layout and Content Snippets](layout-and-content-snippets.md)
 - [Troubleshooting](troubleshooting.md)
+
+## Dataverse examples added
+
+This repo now includes a few real-world Dataverse list/render examples (in `loops-and-lists.md`, `entity-and-data-patterns.md`, and `layout-and-content-snippets.md`) showing typical FetchXML queries and Liquid rendering patterns you can copy into Web Templates or snippets.
 
 ## Why This Repo Exists
 
