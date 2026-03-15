@@ -159,3 +159,71 @@ Notes:
 - This pattern relies on the portal's FetchXML support for `count` and `page` attributes. For stricter control and performance, use server-side views or a custom Web API proxy.
 - For true cursor-style paging you can implement FetchXML paging cookies (more advanced) to maintain consistent result sets under concurrent changes.
 
+## FetchXML paging with paging-cookie (cursor)
+
+For stable paging across changing data, use FetchXML paging cookies (cursor-style paging). This preserves a consistent result window even if records are added/removed between requests. The example below shows how to preserve and pass a paging cookie between requests — typically you store the cookie in a hidden form field or encode it in the link.
+
+```liquid
+{%- assign page_size = 50 -%}
+{%- assign paging_cookie = request.params.pagingcookie | default: nil -%}
+
+{% fetchxml results %}
+<fetch mapping="logical" count="{{ page_size }}" paging-cookie="{{ paging_cookie }}">
+  <entity name="account">
+    <attribute name="accountid" />
+    <attribute name="name" />
+    <order attribute="name" />
+  </entity>
+</fetch>
+{% endfetchxml %}
+
+<ul class="accounts">
+  {% for e in results.entities %}
+    <li>{{ e.name }}</li>
+  {% endfor %}
+</ul>
+
+{% comment %}
+The FetchXML result may return a paging cookie value (implementation depends on portal version and template helpers).
+You should capture and propagate that cookie back to the next page request (for example via a query param or hidden form field).
+{% endcomment %}
+
+<form method="get">
+  {% if results.paging_cookie %}
+    <input type="hidden" name="pagingcookie" value="{{ results.paging_cookie }}" />
+    <button name="next" value="1">Next</button>
+  {% endif %}
+</form>
+
+Notes:
+- Portal implementations differ slightly in how they expose the paging cookie in the returned object; check your portal's FetchXML response shape and adapt the code accordingly.
+- Cursor paging is more resilient to concurrent data changes than page/offset paging but requires storing or propagating the cookie between requests.
+
+### Implementing next/prev links with paging-cookie
+
+Two practical ways to propagate a paging cookie: (A) include it in a next link after URL-encoding, or (B) store it in a hidden input and use a small piece of client-side JS to submit the cookie back to the server for the next request.
+
+URL-encoded query param (simple link):
+
+```liquid
+{% if results.paging_cookie %}
+  <a href="?pagingcookie={{ results.paging_cookie | url_encode }}">Next</a>
+{% endif %}
+```
+
+Hidden input + JS submit (good when you want to POST or keep the URL clean):
+
+```html
+<form id="pagingForm" method="get">
+  <input type="hidden" id="pagingcookie" name="pagingcookie" value="" />
+  <button id="nextBtn" type="button">Next</button>
+</form>
+
+<script>
+  (function(){
+    // server should expose the cookie in the template when available
+    var cookie = '{{ results.paging_cookie | escape }}';
+    if (cookie && cookie.length > 0) {
+      document.getElementById('pagingcookie').value = cookie;
+
+      document.getElementById('nextBtn').addEventListener('click', function(){

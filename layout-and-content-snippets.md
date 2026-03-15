@@ -5,6 +5,13 @@ Small content snippets can improve consistency across pages.
 ## Reusable Welcome Block Pattern
 
 ```liquid
+# Layout and Content Snippets
+
+Small content snippets can improve consistency across pages.
+
+## Reusable Welcome Block Pattern
+
+```liquid
 <section class="welcome-panel">
   {% if user %}
     <h2>Welcome, {{ user.fullname }}</h2>

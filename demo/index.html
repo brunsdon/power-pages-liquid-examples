@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Power Pages Liquid Examples — Static Demo</title>
+  <style>
+    body{font-family:Segoe UI,Arial,Helvetica,sans-serif;line-height:1.4;margin:24px}
+    h1,h2{color:#222}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+    ul{list-style:none;padding:0}
+    li{padding:10px;border-bottom:1px solid #eee}
+    .meta{color:#666;font-size:0.9rem}
+    .container{max-width:1000px;margin:0 auto}
+    pre{background:#f7f7f7;padding:10px;border-radius:4px;overflow:auto}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Power Pages Liquid Examples — Static Demo</h1>
+    <p>This static demo uses mock JSON to preview how the Liquid examples would render. It does not execute FetchXML — it models the final HTML output so you can preview layout and accessibility.
+    </p>
+
+    <div class="grid">
+      <section>
+        <h2>Accounts (preview)</h2>
+        <ul id="accounts"></ul>
+      </section>
+
+      <section>
+        <h2>Cases (preview)</h2>
+        <ul id="cases"></ul>
+      </section>
+    </div>
+
+    <section>
+      <h2>Contacts for Account (preview)</h2>
+      <ul id="contacts"></ul>
+    </section>
+
+    <h2>Notes</h2>
+    <p>To test dynamic behavior copy the underlying Liquid examples into a Power Pages Web Template and replace logical names as needed. The mock data is in <code>mock-data.json</code>.</p>
+
+    <h3>Mock data (snippet)</h3>
+    <pre id="mock" aria-hidden="false"></pre>
+  </div>
+
+  <script>
+    // Load mock data and render lists
+    fetch('mock-data.json').then(function(r){ return r.json(); }).then(function(data){
+      document.getElementById('mock').textContent = JSON.stringify(data, null, 2);
+
+      var accountsEl = document.getElementById('accounts');
+      data.accounts.forEach(function(a){
+        var li = document.createElement('li');
+        li.innerHTML = '<h3><a href="/account/' + a.accountid + '">' + a.name + '</a></h3>' +
+                       '<div class="meta">Account #: ' + (a.accountnumber || 'n/a') + '</div>';
+        accountsEl.appendChild(li);
+      });
+
+      var casesEl = document.getElementById('cases');
+      data.cases.forEach(function(c){
+        var li = document.createElement('li');
+        li.innerHTML = '<a href="/case/' + c.incidentid + '">' + (c.title || '(no title)') + '</a>' +
+                       '<div class="meta">Ref: ' + (c.ticketnumber || '—') + ' • ' + c.createdon + '</div>';
+        casesEl.appendChild(li);
+      });
+
+      var contactsEl = document.getElementById('contacts');
+      data.contacts.forEach(function(c){
+        var li = document.createElement('li');
+        li.innerHTML = '<strong>' + c.fullname + '</strong>' + (c.emailaddress1 ? ' — <a href="mailto:' + c.emailaddress1 + '">' + c.emailaddress1 + '</a>' : '');
+        contactsEl.appendChild(li);
+      });
+    }).catch(function(){
+      document.getElementById('mock').textContent = 'Failed to load mock data.';
+    });
+  </script>
+</body>
+</html>
