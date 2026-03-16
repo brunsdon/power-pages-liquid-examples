@@ -1,19 +1,44 @@
-# Demo: static preview harness
+# Demo Preview Harness
 
-This folder contains a tiny static demo that uses mock JSON to preview how the Liquid templates would appear when rendered.
+This folder contains a tiny static preview for the HTML shape of the examples in this repository. It is useful when you want to sanity-check layout and copy before pasting Liquid into a real Power Pages site.
 
-Files:
+## Preview flow
 
-- `index.html` — static preview page (open in your browser).
-- `mock-data.json` — mock data used by the preview.
+```mermaid
+flowchart LR
+  A[mock-data.json] --> B[index.html]
+  B --> C[Static browser preview]
+  C --> D[Copy final structure into portal template]
+```
 
-How to view:
+## Files
 
-1. Open `demo/index.html` in a modern browser (double-click or use "Open File" in your browser).
-2. The demo fetches `mock-data.json` locally; no server required.
+- index.html: static preview page
+- mock-data.json: sample data used by the preview
 
-Notes:
+## How to use it
 
-- This demo does not execute FetchXML or Liquid. It's intended to preview the final HTML structure and styles. To test FetchXML, paste the Liquid blocks into a Power Pages Web Template on a dev portal.
-- Use the mock data as a reference to adapt FetchXML attribute names and expected shapes.
-- Use the mock data as a reference to adapt FetchXML attribute names and expected shapes.
+1. Open index.html in a modern browser.
+2. Check the rendered cards, lists, and labels.
+3. Use the structure as a reference when adapting the Liquid snippets in the root docs.
+
+## Mock shape example
+
+```json
+{
+  "accounts": [
+    {
+      "name": "Contoso Ltd",
+      "accountnumber": "A-1001"
+    }
+  ]
+}
+```
+
+## What this demo does not do
+
+- It does not execute Liquid.
+- It does not run FetchXML.
+- It does not enforce Entity Permissions.
+
+Use the preview for layout only. Use a development Power Pages portal for real validation.

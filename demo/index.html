@@ -5,73 +5,151 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Power Pages Liquid Examples — Static Demo</title>
   <style>
-    body{font-family:Segoe UI,Arial,Helvetica,sans-serif;line-height:1.4;margin:24px}
-    h1,h2{color:#222}
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-    ul{list-style:none;padding:0}
-    li{padding:10px;border-bottom:1px solid #eee}
-    .meta{color:#666;font-size:0.9rem}
-    .container{max-width:1000px;margin:0 auto}
-    pre{background:#f7f7f7;padding:10px;border-radius:4px;overflow:auto}
+    :root{
+      --ink:#1d2430;
+      --muted:#5b6675;
+      --line:#d8dfeb;
+      --card:#ffffff;
+      --bg:#f2f7fb;
+      --accent:#0d6c68;
+      --accent-soft:#dff4f0;
+      --warn:#8a5b00;
+      --warn-soft:#fff1cf;
+    }
+    *{box-sizing:border-box}
+    body{font-family:"Segoe UI",Arial,Helvetica,sans-serif;line-height:1.45;margin:0;background:linear-gradient(180deg,#edf4f8 0%,#f8fbfd 50%,#eef6fb 100%);color:var(--ink)}
+    h1,h2,h3,p{margin:0}
+    a{color:inherit}
+    .container{max-width:1180px;margin:0 auto;padding:28px}
+    .hero{padding:28px;border-radius:24px;background:radial-gradient(circle at top left,#ffffff 0%,#eef7f6 42%,#f9fcff 100%);border:1px solid var(--line);box-shadow:0 20px 48px rgba(24,51,77,.08)}
+    .eyebrow{text-transform:uppercase;letter-spacing:.14em;font-size:.76rem;color:var(--accent);font-weight:700}
+    .hero h1{margin-top:8px;font-size:clamp(2rem,4vw,3.2rem);line-height:1.05}
+    .hero p{margin-top:12px;max-width:820px;color:var(--muted)}
+    .nav-preview{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+    .nav-preview a{text-decoration:none;padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.8)}
+    .nav-preview a.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+    .banner{margin-top:18px;padding:14px 16px;border-radius:16px;background:var(--accent-soft);color:var(--accent);font-weight:700}
+    .layout{display:grid;grid-template-columns:1.1fr .9fr;gap:22px;margin-top:24px}
+    .stack{display:grid;gap:22px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:22px;box-shadow:0 14px 32px rgba(24,51,77,.06)}
+    .card h2{font-size:1.18rem;margin-bottom:14px}
+    .muted{color:var(--muted)}
+    ul{list-style:none;padding:0;margin:0;display:grid;gap:12px}
+    li{padding:14px 16px;border:1px solid var(--line);border-radius:16px;background:#fbfdff}
+    .meta{display:block;color:var(--muted);font-size:.94rem;margin-top:6px}
+    .badge{display:inline-block;padding:6px 10px;border-radius:999px;font-size:.82rem;font-weight:700}
+    .badge-open{background:#dff6e4;color:#1d6c32}
+    .badge-pending{background:var(--warn-soft);color:var(--warn)}
+    .status-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
+    .empty-state{padding:18px;border-radius:18px;border:1px dashed #c9b57d;background:#fff8e7}
+    .permission-note{margin-top:14px;padding:14px 16px;border-radius:16px;background:#fff7db;border:1px solid #ead7a0;color:#785100}
+    pre{background:#f6f8fb;padding:14px;border-radius:16px;overflow:auto;border:1px solid var(--line);font-size:.92rem}
+    @media (max-width: 900px){.layout{grid-template-columns:1fr}.container{padding:18px}}
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Power Pages Liquid Examples — Static Demo</h1>
-    <p>This static demo uses mock JSON to preview how the Liquid examples would render. It does not execute FetchXML — it models the final HTML output so you can preview layout and accessibility.
-    </p>
-
-    <div class="grid">
-      <section>
-        <h2>Accounts (preview)</h2>
-        <ul id="accounts"></ul>
-      </section>
-
-      <section>
-        <h2>Cases (preview)</h2>
-        <ul id="cases"></ul>
-      </section>
-    </div>
-
-    <section>
-      <h2>Contacts for Account (preview)</h2>
-      <ul id="contacts"></ul>
+    <section class="hero">
+      <div class="eyebrow">Preview harness</div>
+      <h1>Rendered examples for navigation, records, and permissions</h1>
+      <p>This static demo now tracks the stronger documentation examples: role-aware navigation, current-user panels, Dataverse-style record lists, and permission-aware empty states.</p>
+      <nav class="nav-preview" aria-label="Navigation preview">
+        <a href="#" class="active" aria-current="page">Home</a>
+        <a href="#">My Profile</a>
+        <a href="#">My Cases</a>
+        <a href="#" id="premiumLink">Premium dashboard</a>
+      </nav>
+      <div class="banner" id="betaBanner"></div>
     </section>
 
-    <h2>Notes</h2>
-    <p>To test dynamic behavior copy the underlying Liquid examples into a Power Pages Web Template and replace logical names as needed. The mock data is in <code>mock-data.json</code>.</p>
+    <div class="layout">
+      <div class="stack">
+        <section class="card">
+          <h2>Current user</h2>
+          <div id="currentUser"></div>
+        </section>
 
-    <h3>Mock data (snippet)</h3>
-    <pre id="mock" aria-hidden="false"></pre>
+        <section class="card">
+          <h2>Accounts</h2>
+          <ul id="accounts"></ul>
+        </section>
+
+        <section class="card">
+          <h2>Cases</h2>
+          <ul id="cases"></ul>
+        </section>
+      </div>
+
+      <div class="stack">
+        <section class="card">
+          <h2>Related contacts</h2>
+          <ul id="contacts"></ul>
+        </section>
+
+        <section class="card">
+          <h2>Permission-aware state</h2>
+          <div id="permissionState"></div>
+        </section>
+
+        <section class="card">
+          <h2>Mock data</h2>
+          <pre id="mock" aria-hidden="false"></pre>
+        </section>
+      </div>
+    </div>
   </div>
 
   <script>
-    // Load mock data and render lists
     fetch('mock-data.json').then(function(r){ return r.json(); }).then(function(data){
       document.getElementById('mock').textContent = JSON.stringify(data, null, 2);
+
+      var userEl = document.getElementById('currentUser');
+      if (data.currentUser && data.currentUser.isAuthenticated) {
+        userEl.innerHTML = '<h3>' + data.currentUser.fullname + '</h3>' +
+          '<p class="muted">' + data.currentUser.emailaddress1 + '</p>' +
+          '<p class="muted">Roles: ' + data.currentUser.webroles.join(', ') + '</p>';
+      } else {
+        userEl.innerHTML = '<div class="empty-state"><h3>Guest user</h3><p class="muted">Show sign-in prompts and remove contact-specific actions.</p></div>';
+      }
+
+      var betaBanner = document.getElementById('betaBanner');
+      betaBanner.textContent = data.currentUser && data.currentUser.isBetaUser ? 'Early access enabled for ' + data.currentUser.fullname : 'General release experience';
+
+      if (!data.currentUser || data.currentUser.webroles.indexOf('PremiumUser') === -1) {
+        document.getElementById('premiumLink').remove();
+      }
 
       var accountsEl = document.getElementById('accounts');
       data.accounts.forEach(function(a){
         var li = document.createElement('li');
         li.innerHTML = '<h3><a href="/account/' + a.accountid + '">' + a.name + '</a></h3>' +
-                       '<div class="meta">Account #: ' + (a.accountnumber || 'n/a') + '</div>';
+                       '<span class="meta">Account #: ' + (a.accountnumber || 'n/a') + '</span>' +
+                       '<span class="meta">Created: ' + a.createdon + '</span>';
         accountsEl.appendChild(li);
       });
 
       var casesEl = document.getElementById('cases');
       data.cases.forEach(function(c){
         var li = document.createElement('li');
+        var badgeClass = c.status === 'Open' ? 'badge badge-open' : 'badge badge-pending';
         li.innerHTML = '<a href="/case/' + c.incidentid + '">' + (c.title || '(no title)') + '</a>' +
-                       '<div class="meta">Ref: ' + (c.ticketnumber || '—') + ' • ' + c.createdon + '</div>';
+                       '<div class="status-row"><span class="' + badgeClass + '">' + c.status + '</span><span class="meta">Ref: ' + (c.ticketnumber || '-') + '</span><span class="meta">' + c.createdon + '</span></div>';
         casesEl.appendChild(li);
       });
 
       var contactsEl = document.getElementById('contacts');
       data.contacts.forEach(function(c){
         var li = document.createElement('li');
-        li.innerHTML = '<strong>' + c.fullname + '</strong>' + (c.emailaddress1 ? ' — <a href="mailto:' + c.emailaddress1 + '">' + c.emailaddress1 + '</a>' : '');
+        li.innerHTML = '<strong>' + c.fullname + '</strong>' + (c.emailaddress1 ? '<span class="meta"><a href="mailto:' + c.emailaddress1 + '">' + c.emailaddress1 + '</a></span>' : '') + '<span class="meta">Account: ' + c.accountName + '</span>';
         contactsEl.appendChild(li);
       });
+
+      var permissionEl = document.getElementById('permissionState');
+      if (data.permissions.canViewInvoices) {
+        permissionEl.innerHTML = '<ul><li><a href="#">INV-20341</a><span class="meta">Awaiting payment</span></li><li><a href="#">INV-20342</a><span class="meta">Paid</span></li></ul>';
+      } else {
+        permissionEl.innerHTML = '<div class="empty-state"><h3>No visible invoices were found</h3><p class="muted">This is the message to show when table permissions trim the query to zero rows.</p></div><div class="permission-note">Keep this state different from a technical error. The user should understand that access or scope may be the reason.</div>';
+      }
     }).catch(function(){
       document.getElementById('mock').textContent = 'Failed to load mock data.';
     });

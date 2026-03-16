@@ -1,20 +1,23 @@
 # Layout and Content Snippets
 
-Small content snippets can improve consistency across pages.
+Small, reusable snippets make Power Pages templates easier to maintain. The best snippets have one job, require very little context, and fail safely when data is missing.
 
-## Reusable Welcome Block Pattern
+## Snippet composition
 
-```liquid
-# Layout and Content Snippets
+```mermaid
+flowchart TD
+  A[Page template] --> B[Header snippet]
+  A --> C[Alert snippet]
+  A --> D[Data list snippet]
+  D --> E[FetchXML result]
+```
 
-Small content snippets can improve consistency across pages.
-
-## Reusable Welcome Block Pattern
+## Welcome panel pattern
 
 ```liquid
 <section class="welcome-panel">
   {% if user %}
-    <h2>Welcome, {{ user.fullname }}</h2>
+    <h2>Welcome, {{ user.fullname | default: "User" | escape }}</h2>
     <p>Use the links below to continue.</p>
   {% else %}
     <h2>Welcome</h2>
@@ -23,57 +26,56 @@ Small content snippets can improve consistency across pages.
 </section>
 ```
 
-## Notification Banner Pattern
+## Notification banner
 
 ```liquid
 {% if request.params.notice %}
-  <div class="alert alert-info">
+  <div class="alert alert-info" role="status">
     {{ request.params.notice | escape }}
   </div>
 {% endif %}
 ```
 
-## Empty State Pattern
+## Empty state block
 
 ```liquid
 {% if weblinks.primary.size == 0 %}
-  <p>No links are currently available.</p>
+  <section class="empty-state">
+    <h2>No links available</h2>
+    <p>Update the configured web link set and publish again.</p>
+  </section>
 {% endif %}
 ```
 
-## Practical Notes
+## Reusable record summary card
 
-- build small reusable patterns
-- keep templates readable for future maintainers
-- document any assumptions around page variables
+```liquid
+<article class="summary-card">
+  <h3>{{ record.name | default: "Untitled record" | escape }}</h3>
+  <p>{{ record.description | default: "No description available" | escape }}</p>
+</article>
+```
 
-## Reusable Dataverse list snippet
-
-Create small, focused snippets for commonly re-used lists (e.g., a recent articles block backed by Dataverse). Store this Liquid in a Web Template or a snippet file and include it where needed.
-
-Example — recent published articles snippet:
+## Recent content snippet
 
 ```liquid
 {% fetchxml recent_articles %}
 <fetch top="5">
-  <entity name="msfp_survey"> <!-- replace with your entity -->
+  <entity name="msfp_survey">
     <attribute name="msfp_surveyid" />
     <attribute name="msfp_name" />
     <attribute name="createdon" />
-    <filter>
-      <condition attribute="statuscode" operator="eq" value="1" />
-    </filter>
     <order attribute="createdon" descending="true" />
   </entity>
 </fetch>
 {% endfetchxml %}
 
-<aside class="recent-articles">
-  <h4>Recent content</h4>
+<aside class="recent-content">
+  <h2>Recent content</h2>
   <ul>
     {% for item in recent_articles.entities %}
       <li>
-        <a href="/content/{{ item.msfp_surveyid }}">{{ item.msfp_name }}</a>
+        <a href="/content/{{ item.msfp_surveyid }}">{{ item.msfp_name | escape }}</a>
         <time>{{ item.createdon | date: "%Y-%m-%d" }}</time>
       </li>
     {% endfor %}
@@ -81,7 +83,22 @@ Example — recent published articles snippet:
 </aside>
 ```
 
-Tips:
-- Keep snippet inputs minimal (e.g., accept a page param for context id).
-- Document required fields for maintainers.
+## Section wrapper with optional heading
 
+```liquid
+{% assign section_title = request.params.title | default: blank %}
+
+<section class="content-block">
+  {% if section_title != blank %}
+    <h2>{{ section_title | escape }}</h2>
+  {% endif %}
+  {{ content }}
+</section>
+```
+
+## Practical rules
+
+- Document the inputs each snippet expects.
+- Keep snippets focused on layout and light presentation logic.
+- Prefer fallback copy over blank regions.
+- Reuse markup patterns so accessibility fixes land in one place.

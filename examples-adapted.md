@@ -1,8 +1,8 @@
-# Adapted examples (Account / Contact / Case)
+# Adapted Examples
 
-These examples are adapted to a common Dataverse schema so you can copy them directly into a Power Pages Web Template and swap out logical names if needed.
+These examples are closer to a typical Dataverse schema so they can be copied into a Power Pages Web Template with minimal adaptation.
 
-## 1) Accounts list (top 10 recent active)
+## Account list pattern
 
 ```liquid
 {% fetchxml accounts %}
@@ -21,19 +21,24 @@ These examples are adapted to a common Dataverse schema so you can copy them dir
 {% endfetchxml %}
 
 <ul class="accounts-list">
-{% for a in accounts.entities %}
-  <li>
-    <h3><a href="/account/{{ a.accountid }}">{{ a.name }}</a></h3>
-    <p>Account #: {{ a.accountnumber | default: "n/a" }}</p>
-    <time>{{ a.createdon | date: "%Y-%m-%d" }}</time>
-  </li>
-{% endfor %}
+  {% for account in accounts.entities %}
+    <li>
+      <h3><a href="/account/{{ account.accountid }}">{{ account.name | escape }}</a></h3>
+      <p>Account #: {{ account.accountnumber | default: "n/a" | escape }}</p>
+      <time>{{ account.createdon | date: "%Y-%m-%d" }}</time>
+    </li>
+  {% endfor %}
 </ul>
 ```
 
-## 2) Account detail with related Contacts
+## Account detail with related contacts
 
-This example fetches contacts related to the current account id (assumes `request.params.accountid` is provided).
+```mermaid
+flowchart LR
+  A[request.params.accountid] --> B[Fetch related contacts]
+  B --> C[contacts.entities]
+  C --> D[Render contact list or empty state]
+```
 
 ```liquid
 {% fetchxml contacts %}
@@ -52,11 +57,11 @@ This example fetches contacts related to the current account id (assumes `reques
 
 {% if contacts.entities.size > 0 %}
   <ul class="contact-list">
-    {% for c in contacts.entities %}
+    {% for contact in contacts.entities %}
       <li>
-        <strong>{{ c.fullname }}</strong>
-        {% if c.emailaddress1 %}
-          — <a href="mailto:{{ c.emailaddress1 }}">{{ c.emailaddress1 }}</a>
+        <strong>{{ contact.fullname | default: "Unnamed contact" | escape }}</strong>
+        {% if contact.emailaddress1 %}
+          <a href="mailto:{{ contact.emailaddress1 }}">{{ contact.emailaddress1 | escape }}</a>
         {% endif %}
       </li>
     {% endfor %}
@@ -66,7 +71,7 @@ This example fetches contacts related to the current account id (assumes `reques
 {% endif %}
 ```
 
-## 3) Recent Cases (incidents)
+## Recent cases pattern
 
 ```liquid
 {% fetchxml cases %}
@@ -85,17 +90,59 @@ This example fetches contacts related to the current account id (assumes `reques
 {% endfetchxml %}
 
 <ul class="cases-list">
-{% for c in cases.entities %}
-  <li>
-    <a href="/case/{{ c.incidentid }}">{{ c.title | default: "(no title)" }}</a>
-    <span class="ref">{{ c.ticketnumber | default: "—" }}</span>
-    <time>{{ c.createdon | date: "%b %d, %Y" }}</time>
-  </li>
-{% endfor %}
+  {% for case in cases.entities %}
+    <li>
+      <a href="/case/{{ case.incidentid }}">{{ case.title | default: "(no title)" | escape }}</a>
+      <span class="ref">{{ case.ticketnumber | default: "-" | escape }}</span>
+      <time>{{ case.createdon | date: "%b %d, %Y" }}</time>
+    </li>
+  {% endfor %}
 </ul>
 ```
 
-## How to adapt
+## Permission-aware invoices example
 
-- Replace logical names if your tenant uses custom entity names.
-- Ensure required attributes are present in the FetchXML so the template doesn't reference missing fields.
+```liquid
+{% fetchxml invoices %}
+<fetch top="10">
+  <entity name="invoice">
+    <attribute name="invoiceid" />
+    <attribute name="name" />
+    <attribute name="invoicenumber" />
+    <attribute name="totalamount" />
+    <order attribute="createdon" descending="true" />
+  </entity>
+</fetch>
+{% endfetchxml %}
+
+{% if invoices.entities.size > 0 %}
+  <ul class="invoice-list">
+    {% for invoice in invoices.entities %}
+      <li>
+        <a href="/invoice/{{ invoice.invoiceid }}">{{ invoice.name | default: invoice.invoicenumber | escape }}</a>
+        <span class="ref">{{ invoice.totalamount | default: "Amount unavailable" }}</span>
+      </li>
+    {% endfor %}
+  </ul>
+{% elsif user %}
+  <p>No visible invoices were found for your account.</p>
+{% else %}
+  <p>Sign in to view invoices.</p>
+{% endif %}
+```
+
+## Status badge helper
+
+```liquid
+{% for case in cases.entities %}
+  {% assign status_label = case.statuscode.label | default: "Unknown" %}
+  <span class="status-badge">{{ status_label | escape }}</span>
+{% endfor %}
+```
+
+## Adaptation checklist
+
+- Replace logical names if your environment uses custom tables or columns.
+- Confirm every referenced attribute is included in the FetchXML.
+- Add empty states before putting a snippet into production.
+- Verify portal permissions with a real contact, not only an admin user.

@@ -1,33 +1,74 @@
-# Testing notes — how to validate examples in a dev portal
+# Testing Notes
 
-Quick steps to verify the Liquid + FetchXML examples in a Power Pages development portal.
+Use a development portal to validate the snippets in this repo. Most issues only show up when the snippet runs under real portal identity, real Entity Permissions, and real published site metadata.
 
-1) Prepare a dev portal environment
-   - Use a sandbox or development Power Pages environment.
-   - Ensure you have a contact with a web role that allows access to sample data, or use an admin contact.
+## Test loop
 
-2) Create a Web Template (or Web Page template)
-   - In the Portal Management app, create a new Web Template and paste one of the FetchXML + Liquid blocks from this repo.
-   - Replace logical names as needed to match your Dataverse schema.
+```mermaid
+flowchart LR
+  A[Paste snippet into dev portal] --> B[Adapt logical names]
+  B --> C[Test anonymous]
+  C --> D[Test authenticated]
+  D --> E[Verify empty states and paging]
+  E --> F[Trim or fix snippet]
+  F --> C
+```
 
-3) Expose required params
-   - For detail pages that require an id (for example `request.params.accountid`), create a test page with a query param or set the context accordingly.
+## Basic validation steps
 
-4) Test as anonymous and authenticated users
-   - Check the output while signed out (anonymous) and as an authenticated portal user to verify Entity Permission effects.
+1. Create a Web Template or Web Page in a development environment.
+2. Paste in one example from this repo.
+3. Replace entity names, field names, and URLs to match your schema.
+4. Publish the page and load it as both an anonymous and authenticated user.
 
-5) Validate paging
-   - For the paging examples, navigate forward and back. Inspect sessionStorage in DevTools to see the client-side paging stack.
+## Detail-page testing
 
-6) Troubleshooting
-   - If queries return no results, verify entity logical names and attributes in FetchXML, and verify Entity Permissions (portal admin > Entity Permissions).
-   - If output looks stale, clear portal cache (Portal Admin) and your browser cache.
-   - If the FetchXML returns unexpected shapes, add a temporary debug block in the template to dump the `results` object (for example `{{ results | json }}`) and view it in the rendered page.
+Some examples expect query parameters such as an account id.
 
-7) Accessibility checks
-   - Use a screen reader or accessibility tools (Lighthouse) to confirm semantic markup and aria attributes.
+```text
+/account-details?accountid=GUID-HERE
+```
 
-8) Performance
-   - Ensure you limit returned attributes and use paging for large datasets.
+Confirm that the page handles both a valid id and a missing or invalid id.
 
-Collect a minimal failing example (FetchXML snippet and template) if you need targeted help; include the portal behavior and any error messages.
+## Temporary debug patterns
+
+```liquid
+{% if request.params.debug == "1" %}
+  <pre>
+  path={{ request.path | escape }}
+  user={{ user.fullname | default: "anonymous" | escape }}
+  count={{ results.entities.size | default: 0 }}
+  </pre>
+{% endif %}
+```
+
+```liquid
+{% if request.params.debug == "1" %}
+  <pre>{{ results | json | escape }}</pre>
+{% endif %}
+```
+
+## Paging checks
+
+- Move forward and back through the result set.
+- Confirm the sort order stays stable.
+- If using session storage, inspect the stored cookie stack in browser dev tools.
+
+## Accessibility checks
+
+- Verify headings are in a sensible order.
+- Confirm navigation exposes the active page state.
+- Check empty states are understandable without context from surrounding pages.
+
+## Performance checks
+
+- Limit fetched attributes to those actually rendered.
+- Watch for slow joins and oversized result sets.
+- Test with a realistic number of rows, not only a tiny seed dataset.
+
+## Exit criteria
+
+- The snippet renders correctly for the intended audience.
+- The snippet behaves safely when data is empty or missing.
+- The snippet can be understood and adapted by someone else on the team.

@@ -1,14 +1,24 @@
 {
+  "currentUser": {
+    "isAuthenticated": true,
+    "fullname": "A. Smith",
+    "emailaddress1": "asmith@example.com",
+    "webroles": ["Authenticated Users", "PremiumUser", "SupportContact"],
+    "isBetaUser": true
+  },
+  "permissions": {
+    "canViewInvoices": false
+  },
   "accounts": [
     { "accountid": "0001", "name": "Contoso Manufacturing", "accountnumber": "ACC-00123", "createdon": "2026-03-01" },
     { "accountid": "0002", "name": "Northwind Traders", "accountnumber": "ACC-00456", "createdon": "2026-02-18" }
   ],
   "contacts": [
-    { "contactid": "c001", "fullname": "A. Smith", "emailaddress1": "asmith@example.com", "_parentcustomerid_value": "0001" },
-    { "contactid": "c002", "fullname": "B. Jones", "emailaddress1": "bjones@example.com", "_parentcustomerid_value": "0001" }
+    { "contactid": "c001", "fullname": "A. Smith", "emailaddress1": "asmith@example.com", "_parentcustomerid_value": "0001", "accountName": "Contoso Manufacturing" },
+    { "contactid": "c002", "fullname": "B. Jones", "emailaddress1": "bjones@example.com", "_parentcustomerid_value": "0001", "accountName": "Contoso Manufacturing" }
   ],
   "cases": [
-    { "incidentid": "i001", "title": "Issue with login", "ticketnumber": "TCK-1001", "createdon": "2026-03-10" },
-    { "incidentid": "i002", "title": "Payment discrepancy", "ticketnumber": "TCK-1002", "createdon": "2026-03-07" }
+    { "incidentid": "i001", "title": "Issue with login", "ticketnumber": "TCK-1001", "createdon": "2026-03-10", "status": "Open" },
+    { "incidentid": "i002", "title": "Payment discrepancy", "ticketnumber": "TCK-1002", "createdon": "2026-03-07", "status": "Pending response" }
   ]
 }

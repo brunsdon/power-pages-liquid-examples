@@ -1,21 +1,64 @@
 # Power Pages Liquid Examples
 
-A practical collection of Liquid template examples for Microsoft Power Pages, Dataverse, and Dynamics 365 portals.
+Practical Liquid patterns for Microsoft Power Pages, focused on common portal scenarios: user-aware rendering, navigation, looping, Dataverse queries, layout snippets, and paging.
 
-This repository is a concise working reference for developers building Power Pages portals who need common Liquid patterns: conditional rendering, user-aware content, lists, navigation, and Dataverse-backed display logic.
+This repository is meant to be copied from. Each page keeps the examples small enough to drop into a Web Template or Web Page, then adapt to your table and field names.
 
-## Topics Covered
+## What this repo covers
 
-- current user examples
-- conditional rendering
-- navigation and links
-- web links
-- looping patterns
-- Dataverse-backed display concepts (FetchXML + Liquid examples)
-- layout and content snippets
-- troubleshooting and testing notes
+- signed-in vs anonymous rendering
+- conditional content and safe fallbacks
+- loops, collections, and navigation
+- Dataverse-backed FetchXML patterns
+- reusable layout snippets
+- paging-cookie based paging
+- testing, review, and troubleshooting guidance
 
-## Contents
+## How the pieces fit together
+
+```mermaid
+flowchart LR
+  A[Browser Request] --> B[Power Pages Web Template]
+  B --> C{Liquid Conditionals}
+  C -->|Needs data| D[FetchXML Query]
+  D --> E[Dataverse]
+  E --> F[Entity Permissions]
+  F --> G[Liquid Loop and Formatting]
+  C -->|Static branch| G
+  G --> H[Rendered HTML]
+```
+
+## Starter pattern
+
+Use this as a baseline when building a new snippet.
+
+```liquid
+{% assign record_limit = 5 %}
+
+{% if user %}
+  <h1>Welcome, {{ user.fullname | default: "User" | escape }}</h1>
+{% else %}
+  <h1>Welcome</h1>
+{% endif %}
+
+{% fetchxml results %}
+<fetch top="{{ record_limit }}">
+  <entity name="account">
+    <attribute name="accountid" />
+    <attribute name="name" />
+    <order attribute="name" />
+  </entity>
+</fetch>
+{% endfetchxml %}
+
+<ul>
+  {% for record in results.entities %}
+    <li>{{ record.name | default: "Unnamed account" | escape }}</li>
+  {% endfor %}
+</ul>
+```
+
+## Pages
 
 - [Current User Examples](current-user.md)
 - [Conditional Rendering](conditional-rendering.md)
@@ -23,30 +66,23 @@ This repository is a concise working reference for developers building Power Pag
 - [Navigation and Web Links](navigation-and-weblinks.md)
 - [Entity and Data Patterns](entity-and-data-patterns.md)
 - [Layout and Content Snippets](layout-and-content-snippets.md)
-- [Troubleshooting](troubleshooting.md)
 - [Examples Adapted](examples-adapted.md)
 - [Paging Demo](paging-demo.md)
-- [Examples Preview (rendered HTML)](examples-preview.html)
+- [Troubleshooting](troubleshooting.md)
+- [Testing Notes](testing-notes.md)
 - [Review Checklist](review-checklist.md)
-
-## Dataverse examples added
-
-- `examples-adapted.md`: Account, Contact, and Case examples you can copy into a Web Template.
-- `loops-and-lists.md`: looping patterns and a paging-cookie (cursor) example.
-- `paging-demo.md`: a full server + client paging demo using FetchXML paging cookies.
-- A static preview harness is available in `demo/` (open `demo/index.html`).
+- [Examples Preview (rendered HTML)](examples-preview.html)
 
 ## Quick start
 
-1. Copy a FetchXML + Liquid block from this repo into a Portal Web Template.
-2. Replace logical names (entity and attribute names) to match your Dataverse schema.
-3. Publish the template and verify output in a development portal.
+1. Copy a Liquid block into a Power Pages Web Template.
+2. Replace entity names, attribute names, and URLs for your portal.
+3. Verify Entity Permissions for both anonymous and authenticated users.
+4. Test empty states before publishing.
 
-## Notes
+## Working assumptions
 
-- Examples are snippets for Power Pages and must be tested in a dev portal.
-- Check Entity Permissions and web roles when testing authenticated vs anonymous behavior.
-
-## Author
-
-Maintained by Matthew Brunsdon.
+- Examples are intentionally small and presentation-focused.
+- Dataverse schema names differ by tenant, so adapt logical names.
+- FetchXML output shape can vary slightly by portal version.
+- Always validate behavior in a development portal before production use.

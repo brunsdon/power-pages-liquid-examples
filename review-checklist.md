@@ -1,36 +1,63 @@
 # Review Checklist
 
-This checklist helps quickly evaluate portal Liquid templates and Dataverse-backed fragments. Use it when reviewing a Web Template, Web Page template, or snippet.
+Use this checklist when reviewing a Web Template, Web Page template, or shared snippet. The aim is to catch correctness, permission, and maintainability issues before the example gets copied into a real portal.
+
+## Review sequence
+
+```mermaid
+flowchart LR
+  A[Read snippet] --> B[Validate data and logical names]
+  B --> C[Validate permissions and empty states]
+  C --> D[Validate output safety and accessibility]
+  D --> E[Validate performance and maintainability]
+```
 
 ## Correctness
-- Does the template reference correct logical names for entities and attributes?
-- Are required attributes included in the FetchXML query (avoid relying on implicit fields)?
 
-## Security and Permissions
-- Are Entity Permissions accounted for (anonymous vs authenticated)?
-- Are any elevated operations performed server-side with the appropriate identity?
+- Does the template reference the correct entity and attribute logical names?
+- Are all rendered fields included in the FetchXML query?
+- Are optional values handled with defaults or conditionals?
 
-## Output Safety
-- Are outputs escaped where needed (`escape`) to prevent injection or layout breakage?
-- Are default fallbacks provided for optional fields (`default`) to avoid empty/undefined text?
+## Security and permissions
 
-## Accessibility & Markup
-- Is navigation semantic (`<nav>`, `<ul>`, `<li>`), and is `aria-current` used for the active link?
-- Do interactive elements have accessible names and roles?
+- Does the example behave correctly for anonymous and authenticated users?
+- Are Entity Permissions and web roles reflected in the expected output?
+- Is any sensitive field rendered without a clear reason?
+
+## Output safety
+
+- Is user or record text escaped where appropriate?
+- Are links, labels, and fallback values safe and readable?
+
+## Accessibility and markup
+
+- Is semantic markup used for lists, navigation, and headings?
+- Is the active navigation state expressed with aria-current when relevant?
+- Are empty states understandable without relying on color alone?
 
 ## Performance
-- Is the FetchXML scoped to return only required attributes and rows (use `count`/paging)?
-- Are heavy computations or aggregations moved to views or pre-computed fields when possible?
+
+- Does the FetchXML request only the needed rows and columns?
+- Is paging used where result sets can grow?
+- Are joins and per-item branches kept reasonable?
 
 ## Maintainability
-- Are role or capability checks centralized (helper snippet) rather than duplicated across templates?
-- Are snippets documented (what inputs they expect)?
 
-## Testing & Troubleshooting
-- Can the snippet be tested in isolation (small Web Template with a dev portal)?
-- Are common failure modes documented (permissions, empty results, cache issues)?
+- Are role checks and capability flags centralized rather than duplicated?
+- Is the snippet small enough to understand in one read?
+- Are assumptions documented for the next maintainer?
 
-## Documentation
-- Does the repository include a short usage note for the snippet (how to adapt logical names and common variants)?
+## Quick review snippet
 
-Use this checklist as an entry point — a passing checklist helps make template examples reliable and re-usable in production scenarios.
+This tiny block often exposes whether the template has good fallbacks.
+
+```liquid
+{% assign title_text = record.title | default: "Untitled" %}
+<h2>{{ title_text | escape }}</h2>
+```
+
+## Exit criteria
+
+- The example degrades safely when data is missing.
+- The example is readable without guessing hidden assumptions.
+- The example is realistic enough to copy into a dev portal and test immediately.

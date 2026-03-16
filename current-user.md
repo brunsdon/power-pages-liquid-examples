@@ -1,100 +1,88 @@
 # Current User Examples
 
-These examples use the current signed-in user context in Power Pages.
+These patterns use the current signed-in user context exposed by Power Pages. The main rule is simple: always assume the page may also render for an anonymous visitor.
 
-## Show Welcome Message
+## User context flow
+
+```mermaid
+flowchart LR
+  A[Request arrives] --> B{user available?}
+  B -->|Yes| C[Render personalized content]
+  B -->|No| D[Render guest experience]
+  C --> E[Optional role or profile checks]
+```
+
+## Welcome message
 
 ```liquid
 {% if user %}
-  <p>Welcome, {{ user.fullname }}</p>
+  <p>Welcome, {{ user.fullname | default: "there" | escape }}</p>
 {% else %}
-  # Current User Examples
+  <p>Welcome, guest</p>
+{% endif %}
+```
 
-  These examples use the current signed-in user context in Power Pages.
+## Current user email
 
-  ## Show Welcome Message
+```liquid
+{% if user and user.emailaddress1 != blank %}
+  <p>{{ user.emailaddress1 | escape }}</p>
+{% endif %}
+```
 
-  ```liquid
-  {% if user %}
-    <p>Welcome, {{ user.fullname }}</p>
-  {% else %}
-    <p>Welcome, guest</p>
-  {% endif %}
-  ```
+## Signed-in only link
 
-  ## Show Current User Email
+```liquid
+{% if user %}
+  <a href="/profile">My Profile</a>
+{% endif %}
+```
 
-  ```liquid
-  {% if user %}
-    <p>{{ user.emailaddress1 }}</p>
-  {% endif %}
-  ```
+## Anonymous-only link
 
-  ## Show Link Only To Signed-In Users
+```liquid
+{% unless user %}
+  <a href="/sign-in">Sign In</a>
+{% endunless %}
+```
 
-  ```liquid
-  {% if user %}
-    <a href="/profile">My Profile</a>
-  {% endif %}
-  ```
+## Show a profile summary card
 
-  ## Show Link Only To Anonymous Users
+```liquid
+{% if user %}
+  <section class="profile-card">
+    <h2>{{ user.fullname | default: "Portal user" | escape }}</h2>
+    <p>{{ user.emailaddress1 | default: "No email on file" | escape }}</p>
+    <a href="/profile">Manage profile</a>
+  </section>
+{% endif %}
+```
 
-  # Current User Examples
+## Role-based UI branch
 
-  These examples use the current signed-in user context in Power Pages.
+Portal implementations differ in how role information is exposed. If your project maps web roles into a helper variable, keep the actual check small and readable.
 
-  ## Show Welcome Message
+```liquid
+{% assign can_view_premium = user and user.webroles contains "PremiumUser" %}
 
-  ```liquid
-  {% if user %}
-    <p>Welcome, {{ user.fullname }}</p>
-  {% else %}
-    <p>Welcome, guest</p>
-  {% endif %}
-  ```
+{% if can_view_premium %}
+  <a class="btn" href="/premium">Premium dashboard</a>
+{% endif %}
+```
 
-  ## Show Current User Email
+## Defensive display pattern
 
-  ```liquid
-  {% if user %}
-    <p>{{ user.emailaddress1 }}</p>
-  {% endif %}
-  ```
+```liquid
+{% assign display_name = user.fullname | default: user.emailaddress1 | default: "Portal user" %}
 
-  ## Show Link Only To Signed-In Users
+{% if user %}
+  <p>Signed in as {{ display_name | escape }}</p>
+{% endif %}
+```
 
-  ```liquid
-  {% if user %}
-    <a href="/profile">My Profile</a>
-  {% endif %}
-  ```
+## Practical rules
 
-  ## Show Link Only To Anonymous Users
-
-  ```liquid
-  {% unless user %}
-    <a href="/sign-in">Sign In</a>
-  {% endunless %}
-  ```
-
-  ## Practical Notes
-
-  - Always handle anonymous users safely.
-  - Avoid assuming every user field contains a value.
-  - Keep user-facing output simple and maintainable.
-
-  ## Role-based UI patterns
-
-  Where UI elements should be visible only to users with specific web roles, centralize checks to make maintenance easier. If role data isn't available in the `user` object by default, fetch it server-side or expose it via a helper snippet.
-
-  ```liquid
-  {% comment %}Example assumes `user.webroles` is a string or array containing role names{% endcomment %}
-  {% if user and user.webroles contains "PremiumUser" %}
-    <a class="btn" href="/premium">Premium dashboard</a>
-  {% endif %}
-  ```
-
-  Notes:
-  - Prefer a small helper snippet to evaluate capabilities rather than spreading raw role checks across templates.
-  - Test role-based UI as both anonymous and authenticated users to ensure correct visibility.
+- Never assume every user property is populated.
+- Escape user-derived output even when it looks harmless.
+- Keep authenticated and anonymous experiences both intentional.
+- Centralize role and capability checks if more than one template depends on them.

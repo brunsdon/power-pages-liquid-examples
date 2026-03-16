@@ -2,30 +2,179 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Accounts list preview</title>
+  <title>Power Pages examples preview</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
-    body{font-family:Segoe UI,Arial,Helvetica,sans-serif;padding:20px}
-    .accounts-list{list-style:none;padding:0}
-    .account-item{border-bottom:1px solid #ddd;padding:12px 0}
-    .account-item h3{margin:0 0 6px;font-size:1.05rem}
-    .account-item p{margin:0;color:#444}
-    .account-item time{display:block;color:#888;font-size:0.9rem;margin-top:6px}
+    :root{
+      --ink:#1b2430;
+      --muted:#5b6675;
+      --line:#d6deea;
+      --bg:#f3f7fb;
+      --card:#ffffff;
+      --accent:#0b6f6b;
+      --accent-soft:#dff3f1;
+      --warn:#8a5a00;
+      --warn-soft:#fff0cf;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:"Segoe UI",Arial,Helvetica,sans-serif;
+      color:var(--ink);
+      background:linear-gradient(180deg,#edf4f8 0%,#f8fbfd 48%,#eef5fb 100%);
+    }
+    .shell{max-width:1120px;margin:0 auto;padding:28px}
+    .hero{
+      padding:28px;
+      border:1px solid var(--line);
+      border-radius:24px;
+      background:radial-gradient(circle at top left,#ffffff 0%,#eef7f6 38%,#f9fcff 100%);
+      box-shadow:0 20px 48px rgba(24,51,77,.08);
+    }
+    .eyebrow{letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-size:.76rem;font-weight:700}
+    h1,h2,h3,p{margin:0}
+    h1{margin-top:10px;font-size:clamp(2rem,4vw,3.4rem);line-height:1.05}
+    .hero p{margin-top:14px;max-width:780px;color:var(--muted);font-size:1.05rem}
+    .topnav{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}
+    .topnav a{
+      text-decoration:none;color:var(--ink);padding:10px 14px;border-radius:999px;
+      background:rgba(255,255,255,.72);border:1px solid var(--line)
+    }
+    .topnav a.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+    .banner{
+      margin-top:18px;padding:14px 16px;border-radius:16px;background:var(--accent-soft);
+      color:var(--accent);font-weight:600
+    }
+    .layout{display:grid;grid-template-columns:1.2fr .8fr;gap:22px;margin-top:24px}
+    .stack{display:grid;gap:22px}
+    .card{
+      background:var(--card);border:1px solid var(--line);border-radius:22px;padding:22px;
+      box-shadow:0 14px 32px rgba(24,51,77,.06)
+    }
+    .card h2{font-size:1.2rem;margin-bottom:14px}
+    .muted{color:var(--muted)}
+    .accounts-list,.cases-list,.contacts-list,.link-list{list-style:none;padding:0;margin:0;display:grid;gap:12px}
+    .accounts-list li,.cases-list li,.contacts-list li,.link-list li{
+      padding:14px 16px;border:1px solid var(--line);border-radius:16px;background:#fbfdff
+    }
+    .accounts-list a,.cases-list a,.contacts-list a,.link-list a{color:var(--ink);font-weight:700;text-decoration:none}
+    .meta{display:block;margin-top:6px;color:var(--muted);font-size:.95rem}
+    .badge{display:inline-block;padding:6px 10px;border-radius:999px;font-size:.82rem;font-weight:700}
+    .badge-open{background:#dff6e4;color:#1d6c32}
+    .badge-pending{background:var(--warn-soft);color:var(--warn)}
+    .profile-card h3{margin-bottom:6px}
+    .profile-card p{margin-top:6px;color:var(--muted)}
+    .empty-state{
+      padding:18px;border-radius:18px;border:1px dashed #c9b57d;background:#fff8e7
+    }
+    .permission-note{
+      margin-top:14px;padding:14px 16px;border-radius:16px;background:#fff7db;border:1px solid #ead7a0;color:#785100
+    }
+    .status-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+    @media (max-width: 860px){
+      .layout{grid-template-columns:1fr}
+      .shell{padding:18px}
+    }
   </style>
 </head>
 <body>
-  <h1>Accounts (preview)</h1>
-  <ul class="accounts-list">
-    <li class="account-item">
-      <h3><a href="/account/0001">Contoso Manufacturing</a></h3>
-      <p>Account #: ACC-00123</p>
-      <time>Created: March 01, 2026</time>
-    </li>
-    <li class="account-item">
-      <h3><a href="/account/0002">Northwind Traders</a></h3>
-      <p>Account #: ACC-00456</p>
-      <time>Created: February 18, 2026</time>
-    </li>
-  </ul>
+  <main class="shell">
+    <section class="hero">
+      <div class="eyebrow">Static preview</div>
+      <h1>Power Pages Liquid patterns in rendered form</h1>
+      <p>This page mirrors the newer documentation: role-aware navigation, user-sensitive layout blocks, Dataverse-style record lists, and permission-aware empty states.</p>
+      <nav class="topnav" aria-label="Primary navigation preview">
+        <a href="#" class="active" aria-current="page">Home</a>
+        <a href="#">My Profile</a>
+        <a href="#">My Cases</a>
+        <a href="#">Premium dashboard</a>
+      </nav>
+      <div class="banner">Early access enabled for A. Smith</div>
+    </section>
+
+    <section class="layout">
+      <div class="stack">
+        <section class="card profile-card">
+          <h2>Current user block</h2>
+          <h3>A. Smith</h3>
+          <p>asmith@example.com</p>
+          <p class="muted">Signed in as a premium contact with support access.</p>
+        </section>
+
+        <section class="card">
+          <h2>Accounts list</h2>
+          <ul class="accounts-list">
+            <li>
+              <a href="/account/0001">Contoso Manufacturing</a>
+              <span class="meta">Account #: ACC-00123</span>
+              <span class="meta">Created: 2026-03-01</span>
+            </li>
+            <li>
+              <a href="/account/0002">Northwind Traders</a>
+              <span class="meta">Account #: ACC-00456</span>
+              <span class="meta">Created: 2026-02-18</span>
+            </li>
+          </ul>
+        </section>
+
+        <section class="card">
+          <h2>Recent cases</h2>
+          <ul class="cases-list">
+            <li>
+              <a href="/case/i001">Issue with login</a>
+              <div class="status-row">
+                <span class="badge badge-open">Open</span>
+                <span class="muted">TCK-1001</span>
+                <span class="muted">Mar 10, 2026</span>
+              </div>
+            </li>
+            <li>
+              <a href="/case/i002">Payment discrepancy</a>
+              <div class="status-row">
+                <span class="badge badge-pending">Pending response</span>
+                <span class="muted">TCK-1002</span>
+                <span class="muted">Mar 07, 2026</span>
+              </div>
+            </li>
+          </ul>
+        </section>
+      </div>
+
+      <div class="stack">
+        <section class="card">
+          <h2>Related contacts</h2>
+          <ul class="contacts-list">
+            <li>
+              <a href="mailto:asmith@example.com">A. Smith</a>
+              <span class="meta">Primary contact for Contoso Manufacturing</span>
+            </li>
+            <li>
+              <a href="mailto:bjones@example.com">B. Jones</a>
+              <span class="meta">Secondary contact</span>
+            </li>
+          </ul>
+        </section>
+
+        <section class="card">
+          <h2>Role-aware navigation fallback</h2>
+          <ul class="link-list">
+            <li><a href="#">Home</a></li>
+            <li><a href="#">My Profile</a></li>
+            <li><a href="#">My Cases</a></li>
+            <li><a href="#">Premium dashboard</a></li>
+          </ul>
+          <div class="permission-note">If the user does not have the PremiumUser role, the premium link is hidden rather than disabled.</div>
+        </section>
+
+        <section class="card">
+          <h2>Permission-aware empty state</h2>
+          <div class="empty-state">
+            <h3>No visible invoices were found</h3>
+            <p class="muted">This is the state you want when the query returns zero visible rows because the contact does not have table permissions for the invoice table.</p>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
 </body>
 </html>

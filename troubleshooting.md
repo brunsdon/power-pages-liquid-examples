@@ -1,110 +1,86 @@
 # Troubleshooting
 
-A few common Power Pages Liquid issues appear again and again.
+Most Power Pages Liquid issues reduce to four areas: missing context, permissions, caching, or over-complicated templates. The fastest path is to reduce the template until the failure is obvious.
 
-## Blank Output
+## Triage flow
+
+```mermaid
+flowchart TD
+  A[Broken output] --> B{Any output at all?}
+  B -->|No| C[Check variable names and template wiring]
+  B -->|Yes, but wrong| D{Data missing or stale?}
+  D -->|Missing| E[Check FetchXML and Entity Permissions]
+  D -->|Stale| F[Check portal and browser cache]
+  C --> G[Rebuild with minimal snippet]
+  E --> G
+  F --> G
+```
+
+## Blank output
 
 Check:
 
 - variable exists
-- user is signed in
-- field has data
-- correct template is being used
+- user is signed in when the snippet expects a user
+- required field has data
+- the correct Web Template or Web Page is published
 
-## Navigation Not Rendering
+## Navigation not rendering
 
 Check:
 
-- correct web link set
-- page visibility rules
-- signed-in versus anonymous differences
+- the intended web link set is configured
+- page visibility and publishing state are correct
+- signed-in and anonymous users are not seeing different menus by design
 
-## Output Looks Stale
+## Output looks stale
 
 Check:
 
 - portal cache
 - browser cache
 - unpublished changes
-- wrong environment
+- wrong environment or site binding
 
-## Liquid Becomes Too Complex
-
-That is usually a sign to move logic elsewhere:
-
-- Dataverse model
-- Power Automate
-- plugin logic
-# Troubleshooting
-
-A few common Power Pages Liquid issues appear again and again.
-
-## Blank Output
-
-Check:
-
-- variable exists
-- user is signed in
-- field has data
-- correct template is being used
-
-## Navigation Not Rendering
-
-Check:
-
-- correct web link set
-- page visibility rules
-- signed-in versus anonymous differences
-
-## Output Looks Stale
-
-Check:
-
-- portal cache
-- browser cache
-- unpublished changes
-- wrong environment
-
-## Liquid Becomes Too Complex
+## Liquid becomes too complex
 
 That is usually a sign to move logic elsewhere:
 
-- Dataverse model
+- Dataverse model or view
 - Power Automate
 - plugin logic
-- Azure integration service
+- server-side integration layer
 
-## Practical Advice
+## Minimal debug block
 
-When debugging, reduce the template to the smallest possible working example and add pieces back gradually.
+Use this temporarily to prove what the template can actually see.
 
-## Common portal troubleshooting checklist
+```liquid
+<pre>
+user: {% if user %}signed in{% else %}anonymous{% endif %}
+record count: {{ results.entities.size | default: 0 }}
+page path: {{ request.path | escape }}
+</pre>
+```
 
-Below are concise checks and fixes for problems you might encounter when rendering Dataverse-backed content in Power Pages.
+## Safe query-result debug
 
-- Permission / security trimmed results
-	- Symptom: FetchXML returns fewer records or empty results for some users.
-	- Check: Ensure the portal user (contact/portal identity) has proper table permissions (table permissions and web role configuration) for the underlying Dataverse table.
-	- Fix: Configure Entity Permissions in the portal admin (grant Read access for the required scope) or use a service account pattern for server-side components.
+```liquid
+{% if request.params.debug == "1" %}
+  <pre>{{ results | json | escape }}</pre>
+{% endif %}
+```
 
-- FetchXML errors or no output
-	- Symptom: FetchXML block doesn't return entities or errors out.
-	- Check: Validate the FetchXML syntax (matching attribute and entity logical names), ensure fields exist, and test the query in a Web Template with a simple top/short fetch.
-	- Fix: Start with a minimal fetch (one attribute, one entity) and expand. Watch portal logs for detailed errors.
+## Common failure patterns
 
-- Stale or cached output
-	- Symptom: Portal shows old data after updates in Dataverse.
-	- Check: Portal caching is enabled; also browser caching may show old pages.
-	- Fix: Publish/unpublish strategy, clear portal cache from Power Apps Portals admin, and test in a private browser session. Use short cache windows for frequently changing data.
+- Permission-trimmed results: the query works for admins but returns nothing for real portal users.
+- Missing attributes: the template references a field that was never requested in FetchXML.
+- Over-joined FetchXML: the page slows down or times out because the query is doing too much work.
+- Cache confusion: the markup changed, but the portal is still serving an older compiled version.
 
-- Missing fields or null values
-	- Symptom: Template shows empty values or errors when accessing nested attributes.
-	- Check: Confirm the attributes are included in the FetchXML query and that optional fields are handled with `default` or conditional checks.
-	- Fix: Add attributes to FetchXML, or use `{{ field | default: "—" }}` to provide fallbacks.
+## Practical rules
 
-- Performance: slow queries or timeouts
-	- Symptom: Slow page loads when rendering large datasets.
-	- Check: Are you requesting many attributes or performing many joins? Are you using server-side paging?
-	- Fix: Limit attributes returned, use indexed fields in filters, page results, or prepare pre-aggregated views in Dataverse.
-
-If problems persist, collect a minimal failing example (FetchXML, template snippet, and the exact portal behavior) and share it for targeted debugging.
+- Start with one entity and one attribute, then build up.
+- Test with the same contact and web role combination your real users have.
+- Add temporary debug output behind a query-string flag.
+- Remove debug blocks before publishing broadly.
